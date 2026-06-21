@@ -21,3 +21,6 @@ out/
 # JVM crash logs
 hs_err_pid*
 replay_pid*
+
+# RSA keys (never commit; base64 값은 env var로 주입)
+keys/
