@@ -15,3 +15,13 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+
+app:
+  jwt:
+    # issuer: 발급자 식별자(iss 클레임).
+    issuer: ${JWT_ISSUER:http://localhost:8080}
+    # base64로 인코딩한 PEM (env var 주입). private 는 서명, public 은 검증용
+    private-key: ${RSA_PRIVATE_KEY}
+    public-key: ${RSA_PUBLIC_KEY}
+    # 액세스 토큰 만료 시간
+    access-token-ttl: 15m
