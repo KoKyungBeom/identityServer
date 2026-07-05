@@ -16,6 +16,12 @@ spring:
         format_sql: true
     open-in-view: false
 
+  # Redis 접속. 로컬은 docker-compose 의 6379.
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
 app:
   jwt:
     # issuer: 발급자 식별자(iss 클레임).
