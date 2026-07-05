@@ -1,0 +1,8 @@
+# 로컬 개발용 Redis.
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: identity-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
