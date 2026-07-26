@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers("/auth/login").permitAll()
+                        // 로그인 여부는 컨트롤러가 직접 확인(미로그인 시 로그인 화면으로 보냄)하므로 여기선 막지 않음
+                        .requestMatchers("/oauth2/authorize").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
