@@ -15,6 +15,12 @@ public enum ErrorCode {
     INVALID_CLIENT(HttpStatus.BAD_REQUEST, "유효하지 않은 client 입니다."),
     INVALID_REDIRECT_URI(HttpStatus.BAD_REQUEST, "허용되지 않은 redirect_uri 입니다."),
 
+    // OAuth2 토큰 발급
+    UNSUPPORTED_GRANT_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 grant_type 입니다."),
+    INVALID_TOKEN_REQUEST(HttpStatus.BAD_REQUEST, "토큰 요청 파라미터가 올바르지 않습니다."),
+    INVALID_GRANT(HttpStatus.BAD_REQUEST, "만료되었거나 유효하지 않은 코드/토큰입니다."),
+    INVALID_CLIENT_CREDENTIALS(HttpStatus.UNAUTHORIZED, "client 인증에 실패했습니다."),
+
     // 공통
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다.");
 

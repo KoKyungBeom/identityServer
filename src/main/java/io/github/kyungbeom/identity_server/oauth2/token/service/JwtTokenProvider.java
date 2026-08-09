@@ -1,4 +1,4 @@
-package io.github.kyungbeom.identity_server.token;
+package io.github.kyungbeom.identity_server.oauth2.token.service;
 
 import io.github.kyungbeom.identity_server.config.JwtProperties;
 import lombok.RequiredArgsConstructor;

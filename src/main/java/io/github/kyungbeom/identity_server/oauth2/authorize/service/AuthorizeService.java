@@ -1,20 +1,21 @@
-package io.github.kyungbeom.identity_server.oauth2.authorize;
+package io.github.kyungbeom.identity_server.oauth2.authorize.service;
 
 import io.github.kyungbeom.identity_server.common.exception.BusinessException;
 import io.github.kyungbeom.identity_server.common.exception.ErrorCode;
+import io.github.kyungbeom.identity_server.common.util.TokenGenerator;
 import io.github.kyungbeom.identity_server.domain.client.entity.Client;
 import io.github.kyungbeom.identity_server.domain.client.repository.ClientRepository;
 import io.github.kyungbeom.identity_server.domain.member.entity.Member;
 import io.github.kyungbeom.identity_server.domain.member.entity.MemberClient;
 import io.github.kyungbeom.identity_server.domain.member.repository.MemberClientRepository;
 import io.github.kyungbeom.identity_server.domain.member.repository.MemberRepository;
+import io.github.kyungbeom.identity_server.oauth2.authorize.model.AuthorizationCode;
+import io.github.kyungbeom.identity_server.oauth2.authorize.repository.AuthorizationCodeStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,6 @@ import java.util.stream.Collectors;
 public class AuthorizeService {
 
     private static final String RESPONSE_TYPE_CODE = "code";
-    private static final int CODE_BYTE_LENGTH = 32;
 
     private final ClientRepository clientRepository;
     private final MemberRepository memberRepository;
@@ -69,7 +69,7 @@ public class AuthorizeService {
         if (!memberClientRepository.existsByMemberAndClient(member, client)) {   // 이미 연결돼 있나?
             memberClientRepository.save(MemberClient.bind(member, client));       // 없으면 새로 연결(자동 가입)
         }
-        String code = generateCode();
+        String code = TokenGenerator.generate();
         authorizationCodeStore.save(code,
                 AuthorizationCode.of(memberId, client.getClientId(), redirectUri, scope));
         return code;
@@ -87,10 +87,4 @@ public class AuthorizeService {
                 .collect(Collectors.toSet());
     }
 
-    // 추측할 수 없는 랜덤 코드 생성 (URL 에 그대로 담을 수 있는 형태)
-    private String generateCode() {
-        byte[] bytes = new byte[CODE_BYTE_LENGTH];
-        new SecureRandom().nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
 }

@@ -34,6 +34,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login").permitAll()
                         // 로그인 여부는 컨트롤러가 직접 확인(미로그인 시 로그인 화면으로 보냄)하므로 여기선 막지 않음
                         .requestMatchers("/oauth2/authorize").permitAll()
+                        // 사용자 세션이 아니라 client secret 으로 인증하므로(ClientAuthenticator) 여기선 막지 않음
+                        .requestMatchers("/oauth2/token").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
