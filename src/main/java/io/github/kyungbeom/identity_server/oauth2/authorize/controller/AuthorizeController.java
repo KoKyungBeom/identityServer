@@ -1,6 +1,7 @@
-package io.github.kyungbeom.identity_server.oauth2.authorize;
+package io.github.kyungbeom.identity_server.oauth2.authorize.controller;
 
 import io.github.kyungbeom.identity_server.domain.client.entity.Client;
+import io.github.kyungbeom.identity_server.oauth2.authorize.service.AuthorizeService;
 import io.github.kyungbeom.identity_server.security.CustomUserDetails;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

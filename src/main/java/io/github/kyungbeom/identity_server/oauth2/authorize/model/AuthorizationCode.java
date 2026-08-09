@@ -1,4 +1,4 @@
-package io.github.kyungbeom.identity_server.oauth2.authorize;
+package io.github.kyungbeom.identity_server.oauth2.authorize.model;
 
 import lombok.AccessLevel;
 import lombok.Getter;

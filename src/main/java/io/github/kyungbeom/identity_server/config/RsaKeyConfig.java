@@ -4,7 +4,6 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.converter.RsaKeyConverters;
@@ -22,7 +21,6 @@ import java.util.Base64;
  * Phase 1 은 단일 활성 키. kid 는 공개키 thumbprint(SHA-256)에서 안정적으로 도출.
  */
 @Configuration
-@EnableConfigurationProperties(JwtProperties.class)
 @RequiredArgsConstructor
 public class RsaKeyConfig {
 

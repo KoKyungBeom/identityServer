@@ -1,10 +1,11 @@
-package io.github.kyungbeom.identity_server.oauth2.authorize;
+package io.github.kyungbeom.identity_server.oauth2.authorize.repository;
 
+import io.github.kyungbeom.identity_server.config.OAuth2Properties;
+import io.github.kyungbeom.identity_server.oauth2.authorize.model.AuthorizationCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -15,13 +16,13 @@ import java.util.Optional;
 public class AuthorizationCodeStore {
 
     private static final String KEY_PREFIX = "auth_code:";
-    private static final Duration TTL = Duration.ofMinutes(5);
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final OAuth2Properties properties;
 
     public void save(String code, AuthorizationCode value) {
-        // 5분 뒤 자동 삭제되도록 TTL 과 함께 저장
-        redisTemplate.opsForValue().set(KEY_PREFIX + code, value, TTL);
+        // 정해진 시간(기본 5분) 뒤 자동 삭제되도록 TTL 과 함께 저장
+        redisTemplate.opsForValue().set(KEY_PREFIX + code, value, properties.authorizationCodeTtl());
     }
 
     /** 코드를 꺼내면서 동시에 지운다 → 한 번만 쓸 수 있음(재사용 방지). */
