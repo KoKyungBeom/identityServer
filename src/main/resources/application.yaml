@@ -31,6 +31,8 @@ app:
     public-key: ${RSA_PUBLIC_KEY}
     # 액세스 토큰 만료 시간
     access-token-ttl: 15m
+    # id_token(OIDC): 로그인 직후 client 가 읽고 버리므로 짧게
+    id-token-ttl: 15m
 
   oauth2:
     # 인가 코드는 짧게(교환 직후 폐기), refresh 토큰은 길게

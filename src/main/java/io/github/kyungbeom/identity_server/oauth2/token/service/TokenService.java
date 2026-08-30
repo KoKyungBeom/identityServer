@@ -5,6 +5,8 @@ import io.github.kyungbeom.identity_server.common.exception.ErrorCode;
 import io.github.kyungbeom.identity_server.common.util.TokenGenerator;
 import io.github.kyungbeom.identity_server.config.JwtProperties;
 import io.github.kyungbeom.identity_server.domain.client.entity.Client;
+import io.github.kyungbeom.identity_server.domain.member.entity.Member;
+import io.github.kyungbeom.identity_server.domain.member.repository.MemberRepository;
 import io.github.kyungbeom.identity_server.oauth2.authorize.model.AuthorizationCode;
 import io.github.kyungbeom.identity_server.oauth2.authorize.repository.AuthorizationCodeStore;
 import io.github.kyungbeom.identity_server.oauth2.token.dto.TokenRequest;
@@ -29,11 +31,13 @@ public class TokenService {
 
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+    private static final String SCOPE_OPENID = "openid";
 
     private final AuthorizationCodeStore authorizationCodeStore;
     private final RefreshTokenStore refreshTokenStore;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
+    private final MemberRepository memberRepository;
 
     public TokenResponse issue(Client client, TokenRequest request) {
         return switch (request.grantType()) {
@@ -80,15 +84,26 @@ public class TokenService {
         return issueTokens(client, refreshToken.getMemberId(), refreshToken.getScope());
     }
 
-    /** 액세스 토큰(JWT) + refresh 토큰(랜덤 문자열)을 함께 발급한다. */
+    /** 액세스 토큰(JWT) + refresh 토큰(랜덤 문자열)을 발급하고, openid scope 면 id_token 도 함께 준다. */
     private TokenResponse issueTokens(Client client, Long memberId, String scope) {
-        String accessToken = jwtTokenProvider.issueAccessToken(memberId, client.getClientName(), toScopes(scope));
+        List<String> scopes = toScopes(scope);
+        String accessToken = jwtTokenProvider.issueAccessToken(memberId, client.getClientName(), scopes);
+        String idToken = scopes.contains(SCOPE_OPENID) ? issueIdToken(client, memberId) : null;
 
         String refreshToken = TokenGenerator.generate();
         refreshTokenStore.save(refreshToken,
                 RefreshToken.of(memberId, client.getClientId(), scope, Instant.now()));
 
-        return TokenResponse.of(accessToken, jwtProperties.accessTokenTtl().toSeconds(), refreshToken, scope);
+        return TokenResponse.of(accessToken, idToken, jwtProperties.accessTokenTtl().toSeconds(),
+                refreshToken, scope);
+    }
+
+    /** id_token 에는 사용자 정보가 들어가므로 회원을 실제로 조회한다. */
+    private String issueIdToken(Client client, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        return jwtTokenProvider.issueIdToken(
+                memberId, client.getClientName(), member.getEmail(), member.getNickname());
     }
 
     // 공백으로 구분된 scope 문자열을 목록으로
