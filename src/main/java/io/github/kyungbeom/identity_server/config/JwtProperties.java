@@ -13,6 +13,7 @@ public record JwtProperties(
         String issuer,
         String privateKey,
         String publicKey,
-        Duration accessTokenTtl
+        Duration accessTokenTtl,
+        Duration idTokenTtl
 ) {
 }

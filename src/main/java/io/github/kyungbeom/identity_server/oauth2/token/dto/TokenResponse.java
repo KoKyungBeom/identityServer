@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record TokenResponse(
         @JsonProperty("access_token") String accessToken,
+        // openid scope 일 때만 채워진다.
+        @JsonProperty("id_token") String idToken,
         @JsonProperty("token_type") String tokenType,
         @JsonProperty("expires_in") long expiresIn,      // 액세스 토큰 남은 수명(초)
         @JsonProperty("refresh_token") String refreshToken,
@@ -18,7 +20,8 @@ public record TokenResponse(
 
     private static final String TOKEN_TYPE_BEARER = "Bearer";
 
-    public static TokenResponse of(String accessToken, long expiresIn, String refreshToken, String scope) {
-        return new TokenResponse(accessToken, TOKEN_TYPE_BEARER, expiresIn, refreshToken, scope);
+    public static TokenResponse of(String accessToken, String idToken, long expiresIn,
+                                   String refreshToken, String scope) {
+        return new TokenResponse(accessToken, idToken, TOKEN_TYPE_BEARER, expiresIn, refreshToken, scope);
     }
 }
