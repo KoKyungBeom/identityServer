@@ -15,6 +15,13 @@ build/
 *.ipr
 out/
 
+# Eclipse / JDT 언어서버가 만드는 부산물
+.classpath
+.project
+.factorypath
+.settings/
+bin/
+
 # macOS
 .DS_Store
 

@@ -9,6 +9,7 @@ public enum ErrorCode {
     // 회원 / 인증
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
 
     // OAuth2
     UNSUPPORTED_RESPONSE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 response_type 입니다."),
@@ -20,6 +21,8 @@ public enum ErrorCode {
     INVALID_TOKEN_REQUEST(HttpStatus.BAD_REQUEST, "토큰 요청 파라미터가 올바르지 않습니다."),
     INVALID_GRANT(HttpStatus.BAD_REQUEST, "만료되었거나 유효하지 않은 코드/토큰입니다."),
     INVALID_CLIENT_CREDENTIALS(HttpStatus.UNAUTHORIZED, "client 인증에 실패했습니다."),
+    // 다른 프로젝트에서 발급된 토큰으로 이 프로젝트 회원 정보를 꺼내려 한 경우
+    INVALID_TOKEN_AUDIENCE(HttpStatus.UNAUTHORIZED, "토큰의 대상(aud)이 올바르지 않습니다."),
 
     // 공통
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다.");

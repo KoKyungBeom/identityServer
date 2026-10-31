@@ -33,22 +33,28 @@ public class AuthorizeController {
             @AuthenticationPrincipal CustomUserDetails principal,
             HttpServletResponse response) throws IOException {
 
-        // 1. 세션 확인 → 로그인 화면으로
-        if (principal == null) {
-            response.sendRedirect("/auth/login");
+        // 1. 요청부터 검증한다. redirect_uri 를 믿기 전이라 실패하면 그 주소로 보내지 않고 에러로 응답.
+        //    (로그인 화면으로 보내기 전에 먼저 한다 — 엉터리 client_id 로 로그인 화면을 띄울 이유가 없다)
+        Client client = authorizeService.validateRequest(responseType, clientId, redirectUri);
+
+        // 2. 로그인 상태 확인. 어느 프로젝트의 로그인 화면을 띄워야 하는지 알려줘야 하므로
+        //    client_id 를 붙여서 보낸다. 로그인 화면은 이 값을 그대로 들고 있다가 로그인 요청에 함께 보낸다.
+        if (principal == null || !client.getClientName().equals(principal.getClientName())) {
+            // 다른 프로젝트에 로그인한 세션이면 이 프로젝트 회원이 아니므로 역시 로그인부터 다시 한다.
+            // (프로젝트끼리 회원을 공유하지 않는다 = SSO 가 아니다)
+            response.sendRedirect(UriComponentsBuilder.fromPath("/auth/login")
+                    .queryParam("client_id", clientId)
+                    .build().toUriString());
             return;
         }
 
-        // 2~4. redirect_uri 를 믿기 전 검증. 실패하면 그 주소로 보내지 않고 에러로 응답
-        Client client = authorizeService.validateRequest(responseType, clientId, redirectUri);
-
-        // 5. scope 가 허용 범위를 벗어나면, 표준대로 redirect_uri 에 error 를 붙여 돌려보냄
+        // 3. scope 가 허용 범위를 벗어나면, 표준대로 redirect_uri 에 error 를 붙여 돌려보냄
         if (!authorizeService.isScopeAllowed(client, scope)) {
             response.sendRedirect(buildRedirect(redirectUri, "error", "invalid_scope", state));
             return;
         }
 
-        // 6~7. (처음이면 자동 연결 후) 인가 코드 발급 → redirect_uri 로 전달
+        // 4. 인가 코드 발급 → redirect_uri 로 전달
         String code = authorizeService.issueAuthorizationCode(
                 client, principal.getMemberId(), redirectUri, scope);
         response.sendRedirect(buildRedirect(redirectUri, "code", code, state));

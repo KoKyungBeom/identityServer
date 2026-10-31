@@ -1,6 +1,5 @@
 package io.github.kyungbeom.identity_server.config;
 
-import io.github.kyungbeom.identity_server.security.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,8 +18,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private final CustomUserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,7 +43,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /** 기본 체인: 폼 로그인/세션 기반. */
+    /**
+     * 기본 체인: 세션 기반.
+     * 로그인은 formLogin 이 아니라 MemberAuthController 가 직접 처리한다 —
+     * 회원 풀이 프로젝트별로 나뉘어 있어 이메일만으로는 사람을 특정할 수 없기 때문.
+     */
     @Bean
     @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -55,6 +56,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
+                        // 로그인 자체는 당연히 미인증 상태로 들어온다
                         .requestMatchers("/auth/login").permitAll()
                         // 공개키·설명서는 항상 열어둔다
                         .requestMatchers("/.well-known/**").permitAll()
@@ -64,22 +66,13 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/token").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginProcessingUrl("/auth/login")
-                        .usernameParameter("email")
-                        .passwordParameter("password")
-                        // API 스타일: 리다이렉트 대신 상태코드만 반환
-                        .successHandler((req, res, auth) -> res.setStatus(HttpServletResponse.SC_OK))
-                        .failureHandler((req, res, ex) -> res.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
-                )
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessHandler((req, res, auth) -> res.setStatus(HttpServletResponse.SC_OK))
                 )
                 // 미인증 상태로 보호 자원 접근 시 302 리다이렉트 대신 401 반환
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
-                        (req, res, e) -> res.setStatus(HttpServletResponse.SC_UNAUTHORIZED)))
-                .userDetailsService(userDetailsService);
+                        (req, res, e) -> res.setStatus(HttpServletResponse.SC_UNAUTHORIZED)));
 
         return http.build();
     }
