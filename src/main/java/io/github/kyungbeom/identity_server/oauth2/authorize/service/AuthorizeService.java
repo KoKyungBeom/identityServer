@@ -5,10 +5,6 @@ import io.github.kyungbeom.identity_server.common.exception.ErrorCode;
 import io.github.kyungbeom.identity_server.common.util.TokenGenerator;
 import io.github.kyungbeom.identity_server.domain.client.entity.Client;
 import io.github.kyungbeom.identity_server.domain.client.repository.ClientRepository;
-import io.github.kyungbeom.identity_server.domain.member.entity.Member;
-import io.github.kyungbeom.identity_server.domain.member.entity.MemberClient;
-import io.github.kyungbeom.identity_server.domain.member.repository.MemberClientRepository;
-import io.github.kyungbeom.identity_server.domain.member.repository.MemberRepository;
 import io.github.kyungbeom.identity_server.oauth2.authorize.model.AuthorizationCode;
 import io.github.kyungbeom.identity_server.oauth2.authorize.repository.AuthorizationCodeStore;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +22,6 @@ public class AuthorizeService {
     private static final String RESPONSE_TYPE_CODE = "code";
 
     private final ClientRepository clientRepository;
-    private final MemberRepository memberRepository;
-    private final MemberClientRepository memberClientRepository;
     private final AuthorizationCodeStore authorizationCodeStore;
 
     /**
@@ -59,16 +53,13 @@ public class AuthorizeService {
     }
 
     /**
-     * 이 회원이 이 client 를 처음 쓰는 거면 자동으로 연결해준다(member_clients). ← 프로젝트 핵심(격리)
-     * 그 뒤 인가 코드를 하나 만들어 Redis 에 저장하고 코드를 돌려준다.
+     * 인가 코드를 하나 만들어 Redis 에 저장하고 코드를 돌려준다.
+     *
+     * 예전에는 여기서 "이 회원이 이 client 를 처음 쓰면 자동으로 연결"하는 일을 했는데,
+     * 그게 사실상 SSO 처럼 동작해 격리를 깨뜨렸다. 이제 회원은 가입할 때부터 한 프로젝트에 속하므로
+     * (members.client_id) 연결해줄 것이 없다. 대신 세션의 프로젝트가 맞는지는 컨트롤러에서 확인한다.
      */
-    @Transactional
     public String issueAuthorizationCode(Client client, Long memberId, String redirectUri, String scope) {
-        // DB 조회 없이 id 만 담은 참조 (연결에만 쓰므로 실제 조회 불필요)
-        Member member = memberRepository.getReferenceById(memberId);
-        if (!memberClientRepository.existsByMemberAndClient(member, client)) {   // 이미 연결돼 있나?
-            memberClientRepository.save(MemberClient.bind(member, client));       // 없으면 새로 연결(자동 가입)
-        }
         String code = TokenGenerator.generate();
         authorizationCodeStore.save(code,
                 AuthorizationCode.of(memberId, client.getClientId(), redirectUri, scope));

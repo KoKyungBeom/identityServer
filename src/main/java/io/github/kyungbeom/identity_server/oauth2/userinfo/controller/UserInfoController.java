@@ -17,6 +17,7 @@ public class UserInfoController {
     @GetMapping("/oauth2/userinfo")
     public UserInfoResponse userInfo(@AuthenticationPrincipal Jwt jwt) {
         Long memberId = Long.valueOf(jwt.getSubject());          // 발급 때 넣은 sub
-        return userInfoService.getUserInfo(memberId, jwt.getClaimAsString("scope"));
+        // aud 는 이 토큰을 쓸 수 있는 프로젝트. 회원의 소속과 맞는지는 서비스에서 확인한다.
+        return userInfoService.getUserInfo(memberId, jwt.getAudience(), jwt.getClaimAsString("scope"));
     }
 }
